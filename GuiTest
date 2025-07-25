@@ -1,168 +1,217 @@
-local loadstring_GuiLibrary = [[
---[=[
- d888b  db    db d888888b      .d888b.      db      db    db  .d8b.  
-88' Y8b 88    88   `88'        VP  `8D      88      88    88 d8' `8b 
-88      88    88    88            odD'      88      88    88 88ooo88 
-88  ooo 88    88    88          .88'        88      88    88 88~~~88 
-88. ~8~ 88b  d88   .88.        j88.         88booo. 88b  d88 88   88    @uniquadev
- Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
-]=]
+local UILibrary = {}
 
-local CollectionService = game:GetService("CollectionService")
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-
-local GuiLibrary = {}
-
-function GuiLibrary:Create()
-    local G2L = {}
-
-    -- Main ScreenGui
-    G2L["ScreenGui_1"] = Instance.new("ScreenGui")
-    G2L["ScreenGui_1"].Name = "MainGui"
-    G2L["ScreenGui_1"].Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-    G2L["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling
-
-    -- Tags
-    CollectionService:AddTag(G2L["ScreenGui_1"], "main")
-
-    -- Main Frame
-    G2L["Frame_2"] = Instance.new("Frame", G2L["ScreenGui_1"])
-    G2L["Frame_2"]["BorderSizePixel"] = 0
-    G2L["Frame_2"]["BackgroundColor3"] = Color3.fromRGB(35, 35, 35)
-    G2L["Frame_2"]["Size"] = UDim2.new(0.3, 0, 0.4, 0)
-    G2L["Frame_2"]["Position"] = UDim2.new(0.35, 0, 0.3, 0)
-    G2L["Frame_2"].Name = "MainFrame"
-
-    -- Corner for main frame
-    G2L["UICorner_3"] = Instance.new("UICorner", G2L["Frame_2"])
-    G2L["UICorner_3"]["CornerRadius"] = UDim.new(0, 10)
-
-    -- Title label
-    G2L["TextLabel_4"] = Instance.new("TextLabel", G2L["Frame_2"])
-    G2L["TextLabel_4"]["BorderSizePixel"] = 0
-    G2L["TextLabel_4"]["TextSize"] = 19
-    G2L["TextLabel_4"]["BackgroundColor3"] = Color3.fromRGB(35, 35, 35)
-    G2L["TextLabel_4"]["FontFace"] = Font.new("rbxasset://fonts/families/Arial.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-    G2L["TextLabel_4"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
-    G2L["TextLabel_4"]["Size"] = UDim2.new(1, 0, 0.15, 0)
-    G2L["TextLabel_4"]["Text"] = "GUI NAME"
-    G2L["TextLabel_4"]["Position"] = UDim2.new(0, 0, 0, 0)
-    G2L["TextLabel_4"].Name = "Title"
-
-    -- Corner for title
-    G2L["UICorner_5"] = Instance.new("UICorner", G2L["TextLabel_4"])
-
-    -- Toggle button
-    G2L["TextButton_6"] = Instance.new("TextButton", G2L["Frame_2"])
-    G2L["TextButton_6"]["BorderSizePixel"] = 0
-    G2L["TextButton_6"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
-    G2L["TextButton_6"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 61)
-    G2L["TextButton_6"]["Size"] = UDim2.new(0.8, 0, 0.15, 0)
-    G2L["TextButton_6"]["Position"] = UDim2.new(0.1, 0, 0.2, 0)
-    G2L["TextButton_6"]["Text"] = "Toggle GUI"
-    G2L["TextButton_6"].Name = "ToggleButton"
-
-    -- Corner for toggle button
-    G2L["UICorner_7"] = Instance.new("UICorner", G2L["TextButton_6"])
-
-    -- Stroke for toggle button
-    G2L["UIStroke_8"] = Instance.new("UIStroke", G2L["TextButton_6"])
-    G2L["UIStroke_8"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
-    G2L["UIStroke_8"]["Color"] = Color3.fromRGB(81, 81, 81)
-
-    -- Stroke for main frame
-    G2L["UIStroke_c"] = Instance.new("UIStroke", G2L["Frame_2"])
-    G2L["UIStroke_c"]["Transparency"] = 0.4
-    G2L["UIStroke_c"]["Thickness"] = 3
-
-    -- Text box
-    G2L["TextBox_10"] = Instance.new("TextBox", G2L["Frame_2"])
-    G2L["TextBox_10"]["CursorPosition"] = -1
-    G2L["TextBox_10"]["BorderSizePixel"] = 0
-    G2L["TextBox_10"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 61)
-    G2L["TextBox_10"]["Size"] = UDim2.new(0.8, 0, 0.15, 0)
-    G2L["TextBox_10"]["Position"] = UDim2.new(0.1, 0, 0.4, 0)
-    G2L["TextBox_10"]["Text"] = ""
-    G2L["TextBox_10"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
-    G2L["TextBox_10"]["PlaceholderText"] = "Enter text here..."
-    G2L["TextBox_10"].Name = "InputBox"
-
-    -- Corner for text box
-    G2L["UICorner_11"] = Instance.new("UICorner", G2L["TextBox_10"])
-
-    -- Stroke for text box
-    G2L["UIStroke_12"] = Instance.new("UIStroke", G2L["TextBox_10"])
-    G2L["UIStroke_12"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border
-    G2L["UIStroke_12"]["Thickness"] = 1.2
-    G2L["UIStroke_12"]["Color"] = Color3.fromRGB(81, 81, 81)
-
-    -- Close button
-    G2L["CloseButton"] = Instance.new("TextButton", G2L["Frame_2"])
-    G2L["CloseButton"]["BorderSizePixel"] = 0
-    G2L["CloseButton"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
-    G2L["CloseButton"]["BackgroundColor3"] = Color3.fromRGB(200, 50, 50)
-    G2L["CloseButton"]["Size"] = UDim2.new(0.2, 0, 0.1, 0)
-    G2L["CloseButton"]["Position"] = UDim2.new(0.7, 0, 0.02, 0)
-    G2L["CloseButton"]["Text"] = "X"
-    G2L["CloseButton"].Name = "CloseButton"
+function UILibrary:CreateWindow(title, defaultSize, defaultPosition)
+    local window = {}
+    window.elements = {}
     
-    local corner = Instance.new("UICorner", G2L["CloseButton"])
-    corner.CornerRadius = UDim.new(0, 5)
+    -- Create main UI components
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "CustomUI"
+    screenGui.Parent = game.CoreGui
 
-    -- Add toggle functionality
-    G2L["TextButton_6"].MouseButton1Click:Connect(function()
-        G2L["Frame_2"].Visible = not G2L["Frame_2"].Visible
-    end)
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = defaultSize or UDim2.new(0, 200, 0, 200)
+    mainFrame.Position = defaultPosition or UDim2.new(0.5, -100, 0.5, -100)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Active = true
+    mainFrame.Draggable = true
+    mainFrame.Parent = screenGui
 
-    -- Close button functionality
-    G2L["CloseButton"].MouseButton1Click:Connect(function()
-        G2L["ScreenGui_1"]:Destroy()
-    end)
+    local titleBar = Instance.new("Frame")
+    titleBar.Name = "TitleBar"
+    titleBar.Size = UDim2.new(1, 0, 0, 20)
+    titleBar.Position = UDim2.new(0, 0, 0, 0)
+    titleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    titleBar.BorderSizePixel = 0
+    titleBar.Parent = mainFrame
 
-    -- Make the frame draggable
-    local dragging
-    local dragInput
-    local dragStart
-    local startPos
+    local titleText = Instance.new("TextLabel")
+    titleText.Name = "TitleText"
+    titleText.Size = UDim2.new(0.7, 0, 1, 0)
+    titleText.Position = UDim2.new(0, 5, 0, 0)
+    titleText.BackgroundTransparency = 1
+    titleText.Text = title or "UI Window"
+    titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleText.TextXAlignment = Enum.TextXAlignment.Left
+    titleText.Font = Enum.Font.Gotham
+    titleText.TextSize = 12
+    titleText.Parent = titleBar
 
-    local function update(input)
-        local delta = input.Position - dragStart
-        G2L["Frame_2"].Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    local minimizeButton = Instance.new("TextButton")
+    minimizeButton.Name = "MinimizeButton"
+    minimizeButton.Size = UDim2.new(0, 20, 0, 20)
+    minimizeButton.Position = UDim2.new(1, -20, 0, 0)
+    minimizeButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    minimizeButton.BorderSizePixel = 0
+    minimizeButton.Text = "_"
+    minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    minimizeButton.Font = Enum.Font.Gotham
+    minimizeButton.TextSize = 14
+    minimizeButton.Parent = titleBar
+
+    local contentFrame = Instance.new("Frame")
+    contentFrame.Name = "ContentFrame"
+    contentFrame.Size = UDim2.new(1, 0, 1, -20)
+    contentFrame.Position = UDim2.new(0, 0, 0, 20)
+    contentFrame.BackgroundTransparency = 1
+    contentFrame.Parent = mainFrame
+
+    -- Window state
+    local minimized = false
+    local originalSize = mainFrame.Size
+    local originalPosition = mainFrame.Position
+
+    -- Minimize function
+    local function toggleMinimize()
+        minimized = not minimized
+        if minimized then
+            mainFrame.Size = UDim2.new(0, 200, 0, 20)
+            minimizeButton.Text = "+"
+        else
+            mainFrame.Size = originalSize
+            minimizeButton.Text = "_"
+        end
     end
 
-    G2L["TextLabel_4"].InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = G2L["Frame_2"].Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
+    minimizeButton.MouseButton1Click:Connect(toggleMinimize)
+
+    -- Public methods
+    function window:Toggle()
+        mainFrame.Visible = not mainFrame.Visible
+    end
+
+    function window:Destroy()
+        screenGui:Destroy()
+    end
+
+    function window:AddLabel(options)
+        local label = Instance.new("TextLabel")
+        label.Name = options.Name or "Label"
+        label.Size = options.Size or UDim2.new(0.8, 0, 0, 20)
+        label.Position = options.Position or UDim2.new(0.1, 0, 0.1, 0)
+        label.BackgroundTransparency = 1
+        label.Text = options.Text or "Label"
+        label.TextColor3 = options.TextColor3 or Color3.fromRGB(255, 255, 255)
+        label.TextXAlignment = options.TextXAlignment or Enum.TextXAlignment.Left
+        label.Font = options.Font or Enum.Font.Gotham
+        label.TextSize = options.TextSize or 12
+        label.Parent = contentFrame
+        
+        table.insert(window.elements, label)
+        return label
+    end
+
+    function window:AddButton(options)
+        local button = Instance.new("TextButton")
+        button.Name = options.Name or "Button"
+        button.Size = options.Size or UDim2.new(0.8, 0, 0, 30)
+        button.Position = options.Position or UDim2.new(0.1, 0, 0.3, 0)
+        button.BackgroundColor3 = options.BackgroundColor3 or Color3.fromRGB(40, 40, 40)
+        button.BorderSizePixel = 0
+        button.Text = options.Text or "Button"
+        button.TextColor3 = options.TextColor3 or Color3.fromRGB(255, 255, 255)
+        button.Font = options.Font or Enum.Font.Gotham
+        button.TextSize = options.TextSize or 14
+        button.Parent = contentFrame
+        
+        if options.Callback and type(options.Callback) == "function" then
+            button.MouseButton1Click:Connect(options.Callback)
+        end
+        
+        table.insert(window.elements, button)
+        return button
+    end
+
+    function window:AddToggle(options)
+        local toggle = Instance.new("TextButton")
+        toggle.Name = options.Name or "Toggle"
+        toggle.Size = options.Size or UDim2.new(0.8, 0, 0, 30)
+        toggle.Position = options.Position or UDim2.new(0.1, 0, 0.5, 0)
+        toggle.BackgroundColor3 = options.BackgroundColor3 or Color3.fromRGB(40, 40, 40)
+        toggle.BorderSizePixel = 0
+        toggle.Text = options.Text or "Toggle: OFF"
+        toggle.TextColor3 = options.StartingState and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+        toggle.Font = options.Font or Enum.Font.Gotham
+        toggle.TextSize = options.TextSize or 14
+        toggle.Parent = contentFrame
+        
+        local state = options.StartingState or false
+        
+        local function updateToggle()
+            if state then
+                toggle.Text = options.Text and options.Text..": ON" or "Toggle: ON"
+                toggle.TextColor3 = Color3.fromRGB(0, 255, 0)
+            else
+                toggle.Text = options.Text and options.Text..": OFF" or "Toggle: OFF"
+                toggle.TextColor3 = Color3.fromRGB(255, 0, 0)
+            end
+        end
+        
+        toggle.MouseButton1Click:Connect(function()
+            state = not state
+            updateToggle()
+            if options.Callback and type(options.Callback) == "function" then
+                options.Callback(state)
+            end
+        end)
+        
+        updateToggle()
+        
+        table.insert(window.elements, toggle)
+        return toggle
+    end
+
+    function window:AddTextBox(options)
+        local textBoxFrame = Instance.new("Frame")
+        textBoxFrame.Name = options.Name or "TextBoxFrame"
+        textBoxFrame.Size = UDim2.new(0.8, 0, 0, 40)
+        textBoxFrame.Position = options.Position or UDim2.new(0.1, 0, 0.7, 0)
+        textBoxFrame.BackgroundTransparency = 1
+        textBoxFrame.Parent = contentFrame
+        
+        local label = Instance.new("TextLabel")
+        label.Name = "Label"
+        label.Size = UDim2.new(0.6, 0, 0, 20)
+        label.Position = UDim2.new(0, 0, 0, 0)
+        label.BackgroundTransparency = 1
+        label.Text = options.Text or "Input:"
+        label.TextColor3 = options.TextColor3 or Color3.fromRGB(255, 255, 255)
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.Font = options.Font or Enum.Font.Gotham
+        label.TextSize = options.TextSize or 12
+        label.Parent = textBoxFrame
+        
+        local textBox = Instance.new("TextBox")
+        textBox.Name = "TextBox"
+        textBox.Size = UDim2.new(1, 0, 0, 20)
+        textBox.Position = UDim2.new(0, 0, 0, 20)
+        textBox.BackgroundColor3 = options.BackgroundColor3 or Color3.fromRGB(40, 40, 40)
+        textBox.BorderSizePixel = 0
+        textBox.Text = options.DefaultText or ""
+        textBox.TextColor3 = options.TextColor3 or Color3.fromRGB(255, 255, 255)
+        textBox.Font = options.Font or Enum.Font.Gotham
+        textBox.TextSize = options.TextSize or 12
+        textBox.Parent = textBoxFrame
+        
+        if options.Callback and type(options.Callback) == "function" then
+            textBox.FocusLost:Connect(function(enterPressed)
+                if not enterPressed then return end
+                options.Callback(textBox.Text)
             end)
         end
-    end)
+        
+        table.insert(window.elements, textBoxFrame)
+        return textBox
+    end
 
-    G2L["TextLabel_4"].InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
-    end)
+    function window:UpdateLayout()
+        -- This would adjust element positions based on the order they were added
+        -- For simplicity, we'll leave this as a placeholder
+    end
 
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            update(input)
-        end
-    end)
-
-    return G2L["ScreenGui_1"]
+    return window
 end
 
-return GuiLibrary
-]]
-
--- To use it:
-local GuiLibrary = loadstring(loadstring_GuiLibrary)()
-local myGui = GuiLibrary:Create()
+return UILibrary
