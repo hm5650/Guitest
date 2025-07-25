@@ -12,107 +12,113 @@ UILibrary.Settings = {
     OffColor = Color3.fromRGB(255, 0, 0),
     ScrollBarColor = Color3.fromRGB(80, 80, 80),
     ScrollBarThumbColor = Color3.fromRGB(120, 120, 120),
-    ElementHeight = 25,  -- Standard height for most elements
-    CompactMode = true   -- New setting for compact mode
+    ElementHeight = 30,
+    Padding = 5
 }
+
+-- Helper function to create instances
+local function CreateInstance(className, props)
+    local instance = Instance.new(className)
+    for prop, value in pairs(props) do
+        instance[prop] = value
+    end
+    return instance
+end
 
 -- Create a new UI window
 function UILibrary:CreateWindow(title, size, position)
-    local window = {}
-    window.Elements = {}
-    window.Visible = true
+    local window = {Elements = {}, Visible = true}
     
     -- Create the main UI container
-    window.ScreenGui = Instance.new("ScreenGui")
-    window.ScreenGui.Name = "UILibrary_"..tostring(math.random(1, 10000))
-    window.ScreenGui.ResetOnSpawn = false
-    window.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    window.ScreenGui.Parent = game:GetService("CoreGui")
+    window.ScreenGui = CreateInstance("ScreenGui", {
+        Name = "UILibrary_"..tostring(math.random(1, 10000)),
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        Parent = game:GetService("CoreGui")
+    })
     
     -- Main frame
-    window.MainFrame = Instance.new("Frame")
-    window.MainFrame.Name = "MainFrame"
-    window.MainFrame.Size = size or UDim2.new(0, 200, 0, 250)
-    window.MainFrame.Position = position or UDim2.new(0.5, -100, 0.5, -125)
-    window.MainFrame.BackgroundColor3 = self.Settings.BackgroundColor
-    window.MainFrame.BorderSizePixel = 0
-    window.MainFrame.Active = true
-    window.MainFrame.Draggable = true
-    window.MainFrame.ClipsDescendants = true
-    window.MainFrame.Parent = window.ScreenGui
+    window.MainFrame = CreateInstance("Frame", {
+        Name = "MainFrame",
+        Size = size or UDim2.new(0, 200, 0, 250),
+        Position = position or UDim2.new(0.5, -100, 0.5, -125),
+        BackgroundColor3 = self.Settings.BackgroundColor,
+        BorderSizePixel = 0,
+        Active = true,
+        Draggable = true,
+        ClipsDescendants = true,
+        Parent = window.ScreenGui
+    })
     
     -- Title bar
-    window.TitleBar = Instance.new("Frame")
-    window.TitleBar.Name = "TitleBar"
-    window.TitleBar.Size = UDim2.new(1, 0, 0, self.Settings.CompactMode and 20 or 25)
-    window.TitleBar.Position = UDim2.new(0, 0, 0, 0)
-    window.TitleBar.BackgroundColor3 = self.Settings.TitleBarColor
-    window.TitleBar.BorderSizePixel = 0
-    window.TitleBar.Parent = window.MainFrame
+    window.TitleBar = CreateInstance("Frame", {
+        Name = "TitleBar",
+        Size = UDim2.new(1, 0, 0, 25),
+        BackgroundColor3 = self.Settings.TitleBarColor,
+        BorderSizePixel = 0,
+        Parent = window.MainFrame
+    })
     
     -- Title text
-    window.TitleText = Instance.new("TextLabel")
-    window.TitleText.Name = "TitleText"
-    window.TitleText.Size = UDim2.new(0.7, 0, 1, 0)
-    window.TitleText.Position = UDim2.new(0, 5, 0, 0)
-    window.TitleText.BackgroundTransparency = 1
-    window.TitleText.Text = title or "UI Library"
-    window.TitleText.TextColor3 = self.Settings.TextColor
-    window.TitleText.TextXAlignment = Enum.TextXAlignment.Left
-    window.TitleText.Font = Enum.Font.Gotham
-    window.TitleText.TextSize = self.Settings.CompactMode and 12 or 14
-    window.TitleText.Parent = window.TitleBar
+    window.TitleText = CreateInstance("TextLabel", {
+        Name = "TitleText",
+        Size = UDim2.new(0.7, 0, 1, 0),
+        Position = UDim2.new(0, 5, 0, 0),
+        BackgroundTransparency = 1,
+        Text = title or "UI Library",
+        TextColor3 = self.Settings.TextColor,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        Parent = window.TitleBar
+    })
     
     -- Minimize button
-    window.MinimizeButton = Instance.new("TextButton")
-    window.MinimizeButton.Name = "MinimizeButton"
-    window.MinimizeButton.Size = UDim2.new(0, self.Settings.CompactMode and 20 or 25, 0, self.Settings.CompactMode and 20 or 25)
-    window.MinimizeButton.Position = UDim2.new(1, -(self.Settings.CompactMode and 20 or 25), 0, 0)
-    window.MinimizeButton.BackgroundColor3 = self.Settings.TitleBarColor
-    window.MinimizeButton.BorderSizePixel = 0
-    window.MinimizeButton.Text = "_"
-    window.MinimizeButton.TextColor3 = self.Settings.TextColor
-    window.MinimizeButton.Font = Enum.Font.Gotham
-    window.MinimizeButton.TextSize = self.Settings.CompactMode and 14 or 16
-    window.MinimizeButton.Parent = window.TitleBar
+    window.MinimizeButton = CreateInstance("TextButton", {
+        Name = "MinimizeButton",
+        Size = UDim2.new(0, 25, 0, 25),
+        Position = UDim2.new(1, -25, 0, 0),
+        BackgroundColor3 = self.Settings.TitleBarColor,
+        BorderSizePixel = 0,
+        Text = "_",
+        TextColor3 = self.Settings.TextColor,
+        Font = Enum.Font.Gotham,
+        TextSize = 14,
+        Parent = window.TitleBar
+    })
     
-    -- Scrolling frame (directly in MainFrame now)
-    window.ScrollingFrame = Instance.new("ScrollingFrame")
-    window.ScrollingFrame.Name = "ScrollingFrame"
-    window.ScrollingFrame.Size = UDim2.new(1, -10, 1, -(self.Settings.CompactMode and 25 or 30))
-    window.ScrollingFrame.Position = UDim2.new(0, 5, 0, self.Settings.CompactMode and 20 or 25)
-    window.ScrollingFrame.BackgroundTransparency = 1
-    window.ScrollingFrame.BorderSizePixel = 0
-    window.ScrollingFrame.ScrollBarThickness = 5
-    window.ScrollingFrame.ScrollBarImageColor3 = self.Settings.ScrollBarColor
-    window.ScrollingFrame.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
-    window.ScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    window.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    window.ScrollingFrame.Parent = window.MainFrame
+    -- Scrolling frame
+    window.ScrollingFrame = CreateInstance("ScrollingFrame", {
+        Name = "ScrollingFrame",
+        Size = UDim2.new(1, -10, 1, -30),
+        Position = UDim2.new(0, 5, 0, 30),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ScrollBarThickness = 5,
+        ScrollBarImageColor3 = self.Settings.ScrollBarColor,
+        VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        Parent = window.MainFrame
+    })
     
     -- UI list layout for scrolling frame
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Padding = UDim.new(0, self.Settings.CompactMode and 3 or 5)
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIListLayout.Parent = window.ScrollingFrame
+    CreateInstance("UIListLayout", {
+        Padding = UDim.new(0, self.Settings.Padding),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = window.ScrollingFrame
+    })
     
     -- Minimized state
     window.Minimized = false
     window.OriginalSize = window.MainFrame.Size
-    window.OriginalPosition = window.MainFrame.Position
     
     -- Toggle minimize function
     function window:ToggleMinimize()
         self.Minimized = not self.Minimized
-        if self.Minimized then
-            self.MainFrame.Size = UDim2.new(self.OriginalSize.X.Scale, self.OriginalSize.X.Offset, 0, self.TitleBar.Size.Y.Offset)
-            self.MinimizeButton.Text = "+"
-            self.Visible = false
-        else
-            self.MainFrame.Size = self.OriginalSize
-            self.MinimizeButton.Text = "_"
-            self.Visible = true
-        end
+        self.MainFrame.Size = self.Minimized and UDim2.new(0, 200, 0, 25) or self.OriginalSize
+        self.MinimizeButton.Text = self.Minimized and "+" or "_"
+        self.Visible = not self.Minimized
     end
     
     -- Destroy function
@@ -128,9 +134,7 @@ function UILibrary:CreateWindow(title, size, position)
     -- Mobile touch support
     local UserInputService = game:GetService("UserInputService")
     if UserInputService.TouchEnabled then
-        -- Make window draggable on mobile
-        local dragStartPos
-        local frameStartPos
+        local dragStartPos, frameStartPos
         
         window.TitleBar.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.Touch then
@@ -162,37 +166,35 @@ end
 
 -- Add a toggle button to the window
 function UILibrary:AddToggle(window, text, defaultValue, callback)
-    local toggle = {}
-    toggle.Value = defaultValue or false
+    local toggle = {Value = defaultValue or false}
     
-    -- Toggle button
-    toggle.Button = Instance.new("TextButton")
-    toggle.Button.Name = "ToggleButton_"..text
-    toggle.Button.Size = UDim2.new(1, 0, 0, self.Settings.ElementHeight)
-    toggle.Button.BackgroundColor3 = self.Settings.ButtonColor
-    toggle.Button.BorderSizePixel = 0
-    toggle.Button.Text = text..": "..(toggle.Value and "ON" or "OFF")
-    toggle.Button.TextColor3 = toggle.Value and self.Settings.OnColor or self.Settings.OffColor
-    toggle.Button.Font = Enum.Font.Gotham
-    toggle.Button.TextSize = self.Settings.CompactMode and 12 or 14
-    toggle.Button.Parent = window.ScrollingFrame
+    toggle.Button = CreateInstance("TextButton", {
+        Name = "ToggleButton_"..text,
+        Size = UDim2.new(0.9, 0, 0, self.Settings.ElementHeight),
+        LayoutOrder = #window.Elements + 1,
+        BackgroundColor3 = self.Settings.ButtonColor,
+        BorderSizePixel = 0,
+        Text = text..": "..(toggle.Value and "ON" or "OFF"),
+        TextColor3 = toggle.Value and self.Settings.OnColor or self.Settings.OffColor,
+        Font = Enum.Font.Gotham,
+        TextSize = 14,
+        Parent = window.ScrollingFrame
+    })
     
-    -- Toggle function
     function toggle:SetValue(value)
-        self.Value = value
-        self.Button.Text = text..": "..(value and "ON" or "OFF")
-        self.Button.TextColor3 = value and self.Settings.OnColor or self.Settings.OffColor
-        if callback then callback(value) end
+        if self.Value ~= value then
+            self.Value = value
+            self.Button.Text = text..": "..(value and "ON" or "OFF")
+            self.Button.TextColor3 = value and self.Settings.OnColor or self.Settings.OffColor
+            if callback then callback(value) end
+        end
     end
     
-    -- Connect click event
     toggle.Button.MouseButton1Click:Connect(function()
         toggle:SetValue(not toggle.Value)
     end)
     
-    -- Add to window elements
     table.insert(window.Elements, toggle)
-    
     return toggle
 end
 
@@ -200,74 +202,69 @@ end
 function UILibrary:AddButton(window, text, callback)
     local button = {}
     
-    -- Button
-    button.Button = Instance.new("TextButton")
-    button.Button.Name = "Button_"..text
-    button.Button.Size = UDim2.new(1, 0, 0, self.Settings.ElementHeight)
-    button.Button.BackgroundColor3 = self.Settings.ButtonColor
-    button.Button.BorderSizePixel = 0
-    button.Button.Text = text
-    button.Button.TextColor3 = self.Settings.ButtonTextColor
-    button.Button.Font = Enum.Font.Gotham
-    button.Button.TextSize = self.Settings.CompactMode and 12 or 14
-    button.Button.Parent = window.ScrollingFrame
+    button.Button = CreateInstance("TextButton", {
+        Name = "Button_"..text,
+        Size = UDim2.new(0.9, 0, 0, self.Settings.ElementHeight),
+        LayoutOrder = #window.Elements + 1,
+        BackgroundColor3 = self.Settings.ButtonColor,
+        BorderSizePixel = 0,
+        Text = text,
+        TextColor3 = self.Settings.ButtonTextColor,
+        Font = Enum.Font.Gotham,
+        TextSize = 14,
+        Parent = window.ScrollingFrame
+    })
     
-    -- Connect click event
     button.Button.MouseButton1Click:Connect(function()
         if callback then callback() end
     end)
     
-    -- Add to window elements
     table.insert(window.Elements, button)
-    
     return button
 end
 
 -- Add a textbox to the window
 function UILibrary:AddTextbox(window, text, defaultValue, callback)
-    local textbox = {}
-    textbox.Value = defaultValue or ""
-    local height = self.Settings.CompactMode and 35 or 40
+    local textbox = {Value = defaultValue or ""}
     
-    -- Container frame
-    textbox.Frame = Instance.new("Frame")
-    textbox.Frame.Name = "TextboxContainer_"..text
-    textbox.Frame.Size = UDim2.new(1, 0, 0, height)
-    textbox.Frame.BackgroundTransparency = 1
-    textbox.Frame.Parent = window.ScrollingFrame
+    textbox.Frame = CreateInstance("Frame", {
+        Name = "TextboxContainer_"..text,
+        Size = UDim2.new(0.9, 0, 0, self.Settings.ElementHeight + 20),
+        LayoutOrder = #window.Elements + 1,
+        BackgroundTransparency = 1,
+        Parent = window.ScrollingFrame
+    })
     
-    -- Label
-    textbox.Label = Instance.new("TextLabel")
-    textbox.Label.Name = "Label"
-    textbox.Label.Size = UDim2.new(1, 0, 0, self.Settings.CompactMode and 12 or 15)
-    textbox.Label.BackgroundTransparency = 1
-    textbox.Label.Text = text
-    textbox.Label.TextColor3 = self.Settings.TextColor
-    textbox.Label.TextXAlignment = Enum.TextXAlignment.Left
-    textbox.Label.Font = Enum.Font.Gotham
-    textbox.Label.TextSize = self.Settings.CompactMode and 11 or 12
-    textbox.Label.Parent = textbox.Frame
+    textbox.Label = CreateInstance("TextLabel", {
+        Name = "Label",
+        Size = UDim2.new(1, 0, 0, 15),
+        BackgroundTransparency = 1,
+        Text = text,
+        TextColor3 = self.Settings.TextColor,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        Parent = textbox.Frame
+    })
     
-    -- Textbox
-    textbox.Box = Instance.new("TextBox")
-    textbox.Box.Name = "Textbox"
-    textbox.Box.Size = UDim2.new(1, 0, 0, self.Settings.ElementHeight)
-    textbox.Box.Position = UDim2.new(0, 0, 0, self.Settings.CompactMode and 15 or 20)
-    textbox.Box.BackgroundColor3 = self.Settings.TextBoxColor
-    textbox.Box.BorderSizePixel = 0
-    textbox.Box.Text = tostring(textbox.Value)
-    textbox.Box.TextColor3 = self.Settings.TextColor
-    textbox.Box.Font = Enum.Font.Gotham
-    textbox.Box.TextSize = self.Settings.CompactMode and 12 or 14
-    textbox.Box.Parent = textbox.Frame
+    textbox.Box = CreateInstance("TextBox", {
+        Name = "Textbox",
+        Size = UDim2.new(1, 0, 0, self.Settings.ElementHeight),
+        Position = UDim2.new(0, 0, 0, 20),
+        BackgroundColor3 = self.Settings.TextBoxColor,
+        BorderSizePixel = 0,
+        Text = tostring(textbox.Value),
+        TextColor3 = self.Settings.TextColor,
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        Parent = textbox.Frame
+    })
     
-    -- Set value function
     function textbox:SetValue(value)
         self.Value = value
         self.Box.Text = tostring(value)
     end
     
-    -- Connect focus lost event
     if callback then
         textbox.Box.FocusLost:Connect(function(enterPressed)
             if enterPressed or not textbox.Box:IsFocused() then
@@ -277,9 +274,7 @@ function UILibrary:AddTextbox(window, text, defaultValue, callback)
         end)
     end
     
-    -- Add to window elements
     table.insert(window.Elements, textbox)
-    
     return textbox
 end
 
@@ -287,21 +282,20 @@ end
 function UILibrary:AddLabel(window, text)
     local label = {}
     
-    -- Label
-    label.Label = Instance.new("TextLabel")
-    label.Label.Name = "Label_"..text
-    label.Label.Size = UDim2.new(1, 0, 0, self.Settings.ElementHeight)
-    label.Label.BackgroundTransparency = 1
-    label.Label.Text = text
-    label.Label.TextColor3 = self.Settings.TextColor
-    label.Label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Label.Font = Enum.Font.Gotham
-    label.Label.TextSize = self.Settings.CompactMode and 12 or 14
-    label.Label.Parent = window.ScrollingFrame
+    label.Label = CreateInstance("TextLabel", {
+        Name = "Label_"..text,
+        Size = UDim2.new(0.9, 0, 0, self.Settings.ElementHeight),
+        LayoutOrder = #window.Elements + 1,
+        BackgroundTransparency = 1,
+        Text = text,
+        TextColor3 = self.Settings.TextColor,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        Parent = window.ScrollingFrame
+    })
     
-    -- Add to window elements
     table.insert(window.Elements, label)
-    
     return label
 end
 
@@ -309,17 +303,16 @@ end
 function UILibrary:AddSeparator(window)
     local separator = {}
     
-    -- Separator frame
-    separator.Frame = Instance.new("Frame")
-    separator.Frame.Name = "Separator"
-    separator.Frame.Size = UDim2.new(1, 0, 0, 1)
-    separator.Frame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    separator.Frame.BorderSizePixel = 0
-    separator.Frame.Parent = window.ScrollingFrame
+    separator.Frame = CreateInstance("Frame", {
+        Name = "Separator",
+        Size = UDim2.new(0.9, 0, 0, 1),
+        LayoutOrder = #window.Elements + 1,
+        BackgroundColor3 = Color3.fromRGB(60, 60, 60),
+        BorderSizePixel = 0,
+        Parent = window.ScrollingFrame
+    })
     
-    -- Add to window elements
     table.insert(window.Elements, separator)
-    
     return separator
 end
 
