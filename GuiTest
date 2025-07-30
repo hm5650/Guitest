@@ -17,10 +17,10 @@ UILibrary.DefaultColors = {
     LabelColor = Color3.fromRGB(200, 200, 200),
     SliderColor = Color3.fromRGB(70, 70, 70),
     SliderHandleColor = Color3.fromRGB(100, 100, 100),
+    StrokeColor = Color3.fromRGB(60, 60, 60),
     TabColor = Color3.fromRGB(45, 45, 45),
     TabHoverColor = Color3.fromRGB(60, 60, 60),
-    TabSelectedColor = Color3.fromRGB(0, 120, 215),
-    TabTextColor = Color3.fromRGB(255, 255, 255)
+    TabSelectedColor = Color3.fromRGB(0, 120, 215)
 }
 
 UILibrary.DefaultConfig = {
@@ -34,6 +34,7 @@ UILibrary.DefaultConfig = {
     Font = Enum.Font.GothamSemibold,
     TextSize = 12,
     SectionHeight = 20,
+    StrokeThickness = 1,
     TabHeight = 30
 }
 
@@ -67,6 +68,7 @@ function UILibrary:CreateUI()
     self.ScreenGui.Parent = game:GetService("CoreGui")
     self.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
+    -- Main frame with stroke
     self.MainFrame = Instance.new("Frame")
     self.MainFrame.Name = "MainFrame"
     self.MainFrame.Size = self.Config.Size
@@ -77,6 +79,12 @@ function UILibrary:CreateUI()
     self.MainFrame.Draggable = true
     self.MainFrame.ClipsDescendants = true
     self.MainFrame.Parent = self.ScreenGui
+    
+    -- Add stroke
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = self.Colors.StrokeColor
+    stroke.Thickness = self.Config.StrokeThickness
+    stroke.Parent = self.MainFrame
     
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, self.Config.CornerRadius)
@@ -125,35 +133,63 @@ function UILibrary:CreateUI()
     minCorner.CornerRadius = UDim.new(0, self.Config.CornerRadius)
     minCorner.Parent = self.MinimizeButton
     
-    -- Create tabs container
-    self.TabsContainer = Instance.new("Frame")
-    self.TabsContainer.Name = "TabsContainer"
-    self.TabsContainer.Size = UDim2.new(1, 0, 0, self.Config.TabHeight)
-    self.TabsContainer.Position = UDim2.new(0, 0, 0, self.Config.TitleHeight)
-    self.TabsContainer.BackgroundTransparency = 1
-    self.TabsContainer.BorderSizePixel = 0
-    self.TabsContainer.ZIndex = 2
-    self.TabsContainer.Parent = self.MainFrame
+    -- Tab container
+    self.TabContainer = Instance.new("Frame")
+    self.TabContainer.Name = "TabContainer"
+    self.TabContainer.Size = UDim2.new(1, 0, 0, self.Config.TabHeight)
+    self.TabContainer.Position = UDim2.new(0, 0, 0, self.Config.TitleHeight)
+    self.TabContainer.BackgroundTransparency = 1
+    self.TabContainer.BorderSizePixel = 0
+    self.TabContainer.ZIndex = 2
+    self.TabContainer.Parent = self.MainFrame
     
-    self.TabsListLayout = Instance.new("UIListLayout")
-    self.TabsListLayout.FillDirection = Enum.FillDirection.Horizontal
-    self.TabsListLayout.Padding = UDim.new(0, 0)
-    self.TabsListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    self.TabsListLayout.Parent = self.TabsContainer
+    self.TabListLayout = Instance.new("UIListLayout")
+    self.TabListLayout.FillDirection = Enum.FillDirection.Horizontal
+    self.TabListLayout.Padding = UDim.new(0, 0)
+    self.TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    self.TabListLayout.Parent = self.TabContainer
     
-    self.ContentContainer = Instance.new("Frame")
-    self.ContentContainer.Name = "ContentContainer"
-    self.ContentContainer.Size = UDim2.new(1, 0, 1, -(self.Config.TitleHeight + self.Config.TabHeight))
-    self.ContentContainer.Position = UDim2.new(0, 0, 0, self.Config.TitleHeight + self.Config.TabHeight)
-    self.ContentContainer.BackgroundTransparency = 1
-    self.ContentContainer.BorderSizePixel = 0
-    self.ContentContainer.Parent = self.MainFrame
+    -- Content area
+    self.ContentFrame = Instance.new("Frame")
+    self.ContentFrame.Name = "ContentFrame"
+    self.ContentFrame.Size = UDim2.new(1, 0, 1, -(self.Config.TitleHeight + self.Config.TabHeight))
+    self.ContentFrame.Position = UDim2.new(0, 0, 0, self.Config.TitleHeight + self.Config.TabHeight)
+    self.ContentFrame.BackgroundTransparency = 1
+    self.ContentFrame.BorderSizePixel = 0
+    self.ContentFrame.Parent = self.MainFrame
+    
+    self.ScrollingFrame = Instance.new("ScrollingFrame")
+    self.ScrollingFrame.Name = "ScrollingFrame"
+    self.ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+    self.ScrollingFrame.Position = UDim2.new(0, 0, 0, 0)
+    self.ScrollingFrame.BackgroundTransparency = 1
+    self.ScrollingFrame.BorderSizePixel = 0
+    self.ScrollingFrame.ScrollBarThickness = 4
+    self.ScrollingFrame.ScrollBarImageColor3 = self.Colors.AccentColor
+    self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    self.ScrollingFrame.Parent = self.ContentFrame
+    
+    self.UIListLayout = Instance.new("UIListLayout")
+    self.UIListLayout.Padding = UDim.new(0, self.Config.ElementPadding)
+    self.UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    self.UIListLayout.Parent = self.ScrollingFrame
+    
+    local padding = Instance.new("UIPadding")
+    padding.PaddingLeft = UDim.new(0, 12)
+    padding.PaddingRight = UDim.new(0, 12)
+    padding.PaddingTop = UDim.new(0, 10)
+    padding.PaddingBottom = UDim.new(0, 10)
+    padding.Parent = self.ScrollingFrame
     
     self.OriginalSize = self.MainFrame.Size
     self.OriginalPosition = self.MainFrame.Position
     
     self.MinimizeButton.MouseButton1Click:Connect(function()
         self:ToggleMinimize()
+    end)
+    
+    self.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.UIListLayout.AbsoluteContentSize.Y + 15)
     end)
     
     self.TitleBar.MouseEnter:Connect(function()
@@ -169,28 +205,50 @@ function UILibrary:CreateUI()
     end)
 end
 
-function UILibrary:AddTab(tabName)
+function UILibrary:AddTab(name)
+    local tab = {
+        Name = name,
+        Elements = {}
+    }
+    
     local tabButton = Instance.new("TextButton")
-    tabButton.Name = "Tab_" .. tabName
-    tabButton.Size = UDim2.new(0, 0, 1, 0) -- Size will be adjusted by the UIListLayout
-    tabButton.AutomaticSize = Enum.AutomaticSize.X
-    tabButton.BackgroundColor3 = self.Colors.TabColor
+    tabButton.Name = "Tab_" .. name
+    tabButton.Size = UDim2.new(0, 60, 1, 0)
+    tabButton.BackgroundColor3 = #self.Tabs == 0 and self.Colors.TabSelectedColor or self.Colors.TabColor
     tabButton.BorderSizePixel = 0
-    tabButton.Text = tabName
-    tabButton.TextColor3 = self.Colors.TabTextColor
+    tabButton.Text = name
+    tabButton.TextColor3 = self.Colors.TitleColor
     tabButton.Font = self.Config.Font
     tabButton.TextSize = self.Config.TextSize
     tabButton.LayoutOrder = #self.Tabs + 1
     tabButton.AutoButtonColor = false
-    tabButton.Parent = self.TabsContainer
+    tabButton.Parent = self.TabContainer
     
-    local padding = Instance.new("UIPadding")
-    padding.PaddingLeft = UDim.new(0, 12)
-    padding.PaddingRight = UDim.new(0, 12)
-    padding.Parent = tabButton
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 4)
+    corner.Parent = tabButton
     
+    tabButton.MouseEnter:Connect(function()
+        if tab ~= self.CurrentTab then
+            tabButton.BackgroundColor3 = self.Colors.TabHoverColor
+        end
+    end)
+    
+    tabButton.MouseLeave:Connect(function()
+        if tab ~= self.CurrentTab then
+            tabButton.BackgroundColor3 = self.Colors.TabColor
+        end
+    end)
+    
+    tabButton.MouseButton1Click:Connect(function()
+        self:SwitchTab(tab)
+    end)
+    
+    tab.Button = tabButton
+    
+    -- Create a scrolling frame for this tab's content
     local tabContent = Instance.new("ScrollingFrame")
-    tabContent.Name = "TabContent_" .. tabName
+    tabContent.Name = "TabContent_" .. name
     tabContent.Size = UDim2.new(1, 0, 1, 0)
     tabContent.Position = UDim2.new(0, 0, 0, 0)
     tabContent.BackgroundTransparency = 1
@@ -198,68 +256,47 @@ function UILibrary:AddTab(tabName)
     tabContent.ScrollBarThickness = 4
     tabContent.ScrollBarImageColor3 = self.Colors.AccentColor
     tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-    tabContent.Visible = false
-    tabContent.Parent = self.ContentContainer
+    tabContent.Visible = #self.Tabs == 0
+    tabContent.Parent = self.ContentFrame
     
-    local contentListLayout = Instance.new("UIListLayout")
-    contentListLayout.Padding = UDim.new(0, self.Config.ElementPadding)
-    contentListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    contentListLayout.Parent = tabContent
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Padding = UDim.new(0, self.Config.ElementPadding)
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Parent = tabContent
     
-    local contentPadding = Instance.new("UIPadding")
-    contentPadding.PaddingLeft = UDim.new(0, 12)
-    contentPadding.PaddingRight = UDim.new(0, 12)
-    contentPadding.PaddingTop = UDim.new(0, 10)
-    contentPadding.PaddingBottom = UDim.new(0, 10)
-    contentPadding.Parent = tabContent
+    local padding = Instance.new("UIPadding")
+    padding.PaddingLeft = UDim.new(0, 12)
+    padding.PaddingRight = UDim.new(0, 12)
+    padding.PaddingTop = UDim.new(0, 10)
+    padding.PaddingBottom = UDim.new(0, 10)
+    padding.Parent = tabContent
     
-    contentListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        tabContent.CanvasSize = UDim2.new(0, 0, 0, contentListLayout.AbsoluteContentSize.Y + 15)
+    listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tabContent.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 15)
     end)
     
-    local tab = {
-        Button = tabButton,
-        Content = tabContent,
-        Elements = {}
-    }
+    tab.Content = tabContent
     
     table.insert(self.Tabs, tab)
     
-    -- Select the first tab by default
     if #self.Tabs == 1 then
-        self:SelectTab(tab)
+        self:SwitchTab(tab)
     end
-    
-    tabButton.MouseEnter:Connect(function()
-        if self.CurrentTab ~= tab then
-            tabButton.BackgroundColor3 = self.Colors.TabHoverColor
-        end
-    end)
-    
-    tabButton.MouseLeave:Connect(function()
-        if self.CurrentTab ~= tab then
-            tabButton.BackgroundColor3 = self.Colors.TabColor
-        end
-    end)
-    
-    tabButton.MouseButton1Click:Connect(function()
-        self:SelectTab(tab)
-    end)
     
     return tab
 end
 
-function UILibrary:SelectTab(tab)
-    -- Deselect current tab
-    if self.CurrentTab then
-        self.CurrentTab.Button.BackgroundColor3 = self.Colors.TabColor
-        self.CurrentTab.Content.Visible = false
+function UILibrary:SwitchTab(tab)
+    -- Hide all tab contents
+    for _, t in ipairs(self.Tabs) do
+        t.Content.Visible = false
+        t.Button.BackgroundColor3 = self.Colors.TabColor
     end
     
-    -- Select new tab
-    self.CurrentTab = tab
-    tab.Button.BackgroundColor3 = self.Colors.TabSelectedColor
+    -- Show selected tab content
     tab.Content.Visible = true
+    tab.Button.BackgroundColor3 = self.Colors.TabSelectedColor
+    self.CurrentTab = tab
 end
 
 function UILibrary:ToggleMinimize()
@@ -267,13 +304,13 @@ function UILibrary:ToggleMinimize()
     if self.Minimized then
         self.MainFrame.Size = UDim2.new(0, self.OriginalSize.X.Offset, 0, self.Config.TitleHeight)
         self.MinimizeButton.Text = "+"
-        self.TabsContainer.Visible = false
-        self.ContentContainer.Visible = false
+        self.ContentFrame.Visible = false
+        self.TabContainer.Visible = false
     else
         self.MainFrame.Size = self.OriginalSize
         self.MinimizeButton.Text = "-"
-        self.TabsContainer.Visible = true
-        self.ContentContainer.Visible = true
+        self.ContentFrame.Visible = true
+        self.TabContainer.Visible = true
     end
 end
 
@@ -285,6 +322,21 @@ end
 function UILibrary:SetTitle(newTitle)
     self.Config.TitleText = newTitle
     self.TitleText.Text = newTitle
+end
+
+function UILibrary:SetStroke(color, thickness)
+    if color then
+        self.Colors.StrokeColor = color
+    end
+    if thickness then
+        self.Config.StrokeThickness = thickness
+    end
+    
+    local stroke = self.MainFrame:FindFirstChildOfClass("UIStroke")
+    if stroke then
+        stroke.Color = self.Colors.StrokeColor
+        stroke.Thickness = self.Config.StrokeThickness
+    end
 end
 
 function UILibrary:AddSection(text, tab)
