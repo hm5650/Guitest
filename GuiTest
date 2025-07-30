@@ -1,1 +1,485 @@
-print("Colz")
+local UILibrary = {}
+
+-- cool colors
+UILibrary.DefaultColors = {
+    TitleColor = Color3.fromRGB(255, 255, 255),
+    CollapseBtnColor = Color3.fromRGB(25, 25, 25),
+    ButtonColor = Color3.fromRGB(45, 45, 45),
+    ButtonHoverColor = Color3.fromRGB(60, 60, 60),
+    ToggleColor = Color3.fromRGB(45, 45, 45),
+    ToggleColorOFF = Color3.fromRGB(200, 60, 60),
+    ToggleColorON = Color3.fromRGB(60, 200, 60),
+    MainFrameColor = Color3.fromRGB(35, 35, 35),
+    SeparatorColor = Color3.fromRGB(70, 70, 70),
+    TextBoxColor = Color3.fromRGB(45, 45, 45),
+    AccentColor = Color3.fromRGB(0, 120, 215),
+    SectionColor = Color3.fromRGB(90, 90, 90),
+    LabelColor = Color3.fromRGB(200, 200, 200),
+    SliderColor = Color3.fromRGB(70, 70, 70),
+    SliderHandleColor = Color3.fromRGB(100, 100, 100),
+    UIStrokeColor = Color3.fromRGB(60, 60, 60),
+    TabColor = Color3.fromRGB(45, 45, 45),
+    TabHoverColor = Color3.fromRGB(60, 60, 60),
+    TabActiveColor = Color3.fromRGB(0, 120, 215),
+    TabTextColor = Color3.fromRGB(200, 200, 200)
+}
+
+-- Config stuff
+UILibrary.DefaultConfig = {
+    Title = "UI Library",
+    TitleText = "UI Library",
+    Size = UDim2.new(0, 250, 0, 350),
+    Position = UDim2.new(0.5, -125, 0.5, -175),
+    TitleHeight = 30,
+    CornerRadius = 6,
+    ElementPadding = 6,
+    Font = Enum.Font.GothamSemibold,
+    TextSize = 12,
+    SectionHeight = 20,
+    UIStrokeThickness = 1,
+    UIStrokeEnabled = true,
+    TabWidth = 40, -- Width of the tab buttons
+    TabGap = 5, -- Gap between tabs and main content
+    TabPadding = 5 -- Padding between tabs
+}
+
+function UILibrary.new(config)
+    local self = setmetatable({}, { __index = UILibrary })
+    
+    self.Config = {}
+    for k, v in pairs(UILibrary.DefaultConfig) do
+        self.Config[k] = config[k] or v
+    end
+    
+    self.Colors = {}
+    for colorName, defaultColor in pairs(UILibrary.DefaultColors) do
+        self.Colors[colorName] = config[colorName] or defaultColor
+    end
+    
+    self.Elements = {}
+    self.Visible = true
+    self.Minimized = false
+    self.Tabs = {}
+    self.CurrentTab = nil
+    
+    self:CreateUI()
+    
+    return self
+end
+
+function UILibrary:CreateUI()
+    self.ScreenGui = Instance.new("ScreenGui")
+    self.ScreenGui.Name = "UILibrary"
+    self.ScreenGui.Parent = game:GetService("CoreGui")
+    self.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- Main container frame that holds both tabs and content
+    self.MainContainer = Instance.new("Frame")
+    self.MainContainer.Name = "MainContainer"
+    self.MainContainer.Size = UDim2.new(
+        0, self.Config.Size.X.Offset + self.Config.TabWidth + self.Config.TabGap,
+        0, self.Config.Size.Y.Offset
+    )
+    self.MainContainer.Position = self.Config.Position
+    self.MainContainer.BackgroundTransparency = 1
+    self.MainContainer.ClipsDescendants = true
+    self.MainContainer.Parent = self.ScreenGui
+    
+    -- Tabs frame (on the right)
+    self.TabsFrame = Instance.new("Frame")
+    self.TabsFrame.Name = "TabsFrame"
+    self.TabsFrame.Size = UDim2.new(0, self.Config.TabWidth, 1, 0)
+    self.TabsFrame.Position = UDim2.new(1, -self.Config.TabWidth, 0, 0)
+    self.TabsFrame.BackgroundTransparency = 1
+    self.TabsFrame.Parent = self.MainContainer
+    
+    -- Tabs layout
+    self.TabsLayout = Instance.new("UIListLayout")
+    self.TabsLayout.Padding = UDim.new(0, self.Config.TabPadding)
+    self.TabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    self.TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    self.TabsLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+    self.TabsLayout.Parent = self.TabsFrame
+    
+    local tabsPadding = Instance.new("UIPadding")
+    tabsPadding.PaddingTop = UDim.new(0, self.Config.TitleHeight + self.Config.TabPadding)
+    tabsPadding.Parent = self.TabsFrame
+    
+    -- Main content frame (on the left)
+    self.MainFrame = Instance.new("Frame")
+    self.MainFrame.Name = "MainFrame"
+    self.MainFrame.Size = self.Config.Size
+    self.MainFrame.Position = UDim2.new(0, 0, 0, 0)
+    self.MainFrame.BackgroundColor3 = self.Colors.MainFrameColor
+    self.MainFrame.BorderSizePixel = 0
+    self.MainFrame.Active = true
+    self.MainFrame.Draggable = true
+    self.MainFrame.ClipsDescendants = true
+    self.MainFrame.Parent = self.MainContainer
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, self.Config.CornerRadius)
+    corner.Parent = self.MainFrame
+    
+    -- Add UI Stroke to main frame
+    if self.Config.UIStrokeEnabled then
+        local uiStroke = Instance.new("UIStroke")
+        uiStroke.Thickness = self.Config.UIStrokeThickness
+        uiStroke.Color = self.Colors.UIStrokeColor
+        uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        uiStroke.Parent = self.MainFrame
+    end
+    
+    self.TitleBar = Instance.new("Frame")
+    self.TitleBar.Name = "TitleBar"
+    self.TitleBar.Size = UDim2.new(1, 0, 0, self.Config.TitleHeight)
+    self.TitleBar.Position = UDim2.new(0, 0, 0, 0)
+    self.TitleBar.BackgroundColor3 = self.Colors.CollapseBtnColor
+    self.TitleBar.BorderSizePixel = 0
+    self.TitleBar.ZIndex = 2
+    self.TitleBar.Parent = self.MainFrame
+    
+    local titleCorner = Instance.new("UICorner")
+    titleCorner.CornerRadius = UDim.new(0, self.Config.CornerRadius)
+    titleCorner.Parent = self.TitleBar
+    
+    self.TitleText = Instance.new("TextLabel")
+    self.TitleText.Name = "TitleText"
+    self.TitleText.Size = UDim2.new(0.7, 0, 1, 0)
+    self.TitleText.Position = UDim2.new(0, 12, 0, 0)
+    self.TitleText.BackgroundTransparency = 1
+    self.TitleText.Text = self.Config.TitleText
+    self.TitleText.TextColor3 = self.Colors.TitleColor
+    self.TitleText.TextXAlignment = Enum.TextXAlignment.Left
+    self.TitleText.Font = Enum.Font.GothamBold
+    self.TitleText.TextSize = 14
+    self.TitleText.ZIndex = 3
+    self.TitleText.Parent = self.TitleBar
+    
+    self.MinimizeButton = Instance.new("TextButton")
+    self.MinimizeButton.Name = "MinimizeButton"
+    self.MinimizeButton.Size = UDim2.new(0, self.Config.TitleHeight, 0, self.Config.TitleHeight)
+    self.MinimizeButton.Position = UDim2.new(1, -self.Config.TitleHeight, 0, 0)
+    self.MinimizeButton.BackgroundColor3 = self.Colors.CollapseBtnColor
+    self.MinimizeButton.BorderSizePixel = 0
+    self.MinimizeButton.Text = "-"
+    self.MinimizeButton.TextColor3 = self.Colors.TitleColor
+    self.MinimizeButton.Font = Enum.Font.GothamBold
+    self.MinimizeButton.TextSize = 18
+    self.MinimizeButton.ZIndex = 3
+    self.MinimizeButton.Parent = self.TitleBar
+    
+    local minCorner = Instance.new("UICorner")
+    minCorner.CornerRadius = UDim.new(0, self.Config.CornerRadius)
+    minCorner.Parent = self.MinimizeButton
+    
+    self.ScrollingFrame = Instance.new("ScrollingFrame")
+    self.ScrollingFrame.Name = "ContentFrame"
+    self.ScrollingFrame.Size = UDim2.new(1, 0, 1, -self.Config.TitleHeight)
+    self.ScrollingFrame.Position = UDim2.new(0, 0, 0, self.Config.TitleHeight)
+    self.ScrollingFrame.BackgroundTransparency = 1
+    self.ScrollingFrame.BorderSizePixel = 0
+    self.ScrollingFrame.ScrollBarThickness = 4
+    self.ScrollingFrame.ScrollBarImageColor3 = self.Colors.AccentColor
+    self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    self.ScrollingFrame.Parent = self.MainFrame
+    
+    self.UIListLayout = Instance.new("UIListLayout")
+    self.UIListLayout.Padding = UDim.new(0, self.Config.ElementPadding)
+    self.UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    self.UIListLayout.Parent = self.ScrollingFrame
+    
+    local padding = Instance.new("UIPadding")
+    padding.PaddingLeft = UDim.new(0, 12)
+    padding.PaddingRight = UDim.new(0, 12)
+    padding.PaddingTop = UDim.new(0, 10)
+    padding.PaddingBottom = UDim.new(0, 10)
+    padding.Parent = self.ScrollingFrame
+    
+    self.OriginalSize = self.MainContainer.Size
+    self.OriginalPosition = self.MainContainer.Position
+    
+    self.MinimizeButton.MouseButton1Click:Connect(function()
+        self:ToggleMinimize()
+    end)
+    
+    self.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.UIListLayout.AbsoluteContentSize.Y + 15)
+    end)
+    
+    self.TitleBar.MouseEnter:Connect(function()
+        self.TitleBar.BackgroundColor3 = Color3.new(
+            self.Colors.CollapseBtnColor.R * 1.2,
+            self.Colors.CollapseBtnColor.G * 1.2,
+            self.Colors.CollapseBtnColor.B * 1.2
+        )
+    end)
+    
+    self.TitleBar.MouseLeave:Connect(function()
+        self.TitleBar.BackgroundColor3 = self.Colors.CollapseBtnColor
+    end)
+    
+    -- Make the entire title bar draggable
+    local dragStart
+    local startPos
+    
+    self.TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragStart = input.Position
+            startPos = self.MainContainer.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragStart = nil
+                end
+            end)
+        end
+    end)
+    
+    self.TitleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and dragStart then
+            local delta = input.Position - dragStart
+            self.MainContainer.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+function UILibrary:AddTab(name, icon)
+    local tabButton = Instance.new("TextButton")
+    tabButton.Name = "Tab_" .. name
+    tabButton.Size = UDim2.new(0.8, 0, 0, self.Config.TabWidth - 10)
+    tabButton.LayoutOrder = #self.Tabs + 1
+    tabButton.BackgroundColor3 = #self.Tabs == 0 and self.Colors.TabActiveColor or self.Colors.TabColor
+    tabButton.BorderSizePixel = 0
+    tabButton.Text = icon or name:sub(1, 1):upper()
+    tabButton.TextColor3 = self.Colors.TabTextColor
+    tabButton.Font = self.Config.Font
+    tabButton.TextSize = self.Config.TextSize
+    tabButton.AutoButtonColor = false
+    tabButton.Parent = self.TabsFrame
+    
+    local tabCorner = Instance.new("UICorner")
+    tabCorner.CornerRadius = UDim.new(0, 4)
+    tabCorner.Parent = tabButton
+    
+    if self.Config.UIStrokeEnabled then
+        local tabStroke = Instance.new("UIStroke")
+        tabStroke.Thickness = self.Config.UIStrokeThickness
+        tabStroke.Color = self.Colors.UIStrokeColor
+        tabStroke.Parent = tabButton
+    end
+    
+    local tabContent = Instance.new("ScrollingFrame")
+    tabContent.Name = "TabContent_" .. name
+    tabContent.Size = UDim2.new(1, 0, 1, -self.Config.TitleHeight)
+    tabContent.Position = UDim2.new(0, 0, 0, self.Config.TitleHeight)
+    tabContent.BackgroundTransparency = 1
+    tabContent.BorderSizePixel = 0
+    tabContent.ScrollBarThickness = 4
+    tabContent.ScrollBarImageColor3 = self.Colors.AccentColor
+    tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+    tabContent.Visible = #self.Tabs == 0
+    tabContent.Parent = self.MainFrame
+    
+    local tabListLayout = Instance.new("UIListLayout")
+    tabListLayout.Padding = UDim.new(0, self.Config.ElementPadding)
+    tabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    tabListLayout.Parent = tabContent
+    
+    local tabPadding = Instance.new("UIPadding")
+    tabPadding.PaddingLeft = UDim.new(0, 12)
+    tabPadding.PaddingRight = UDim.new(0, 12)
+    tabPadding.PaddingTop = UDim.new(0, 10)
+    tabPadding.PaddingBottom = UDim.new(0, 10)
+    tabPadding.Parent = tabContent
+    
+    tabListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tabContent.CanvasSize = UDim2.new(0, 0, 0, tabListLayout.AbsoluteContentSize.Y + 15)
+    end)
+    
+    local tab = {
+        Button = tabButton,
+        Content = tabContent,
+        Name = name,
+        Elements = {}
+    }
+    
+    table.insert(self.Tabs, tab)
+    
+    if #self.Tabs == 1 then
+        self.CurrentTab = tab
+    end
+    
+    tabButton.MouseEnter:Connect(function()
+        if self.CurrentTab ~= tab then
+            tabButton.BackgroundColor3 = self.Colors.TabHoverColor
+        end
+    end)
+    
+    tabButton.MouseLeave:Connect(function()
+        if self.CurrentTab ~= tab then
+            tabButton.BackgroundColor3 = self.Colors.TabColor
+        end
+    end)
+    
+    tabButton.MouseButton1Click:Connect(function()
+        self:SwitchTab(tab)
+    end)
+    
+    return tab
+end
+
+function UILibrary:SwitchTab(tab)
+    if self.CurrentTab == tab then return end
+    
+    -- Hide current tab
+    if self.CurrentTab then
+        self.CurrentTab.Content.Visible = false
+        self.CurrentTab.Button.BackgroundColor3 = self.Colors.TabColor
+    end
+    
+    -- Show new tab
+    tab.Content.Visible = true
+    tab.Button.BackgroundColor3 = self.Colors.TabActiveColor
+    self.CurrentTab = tab
+end
+
+function UILibrary:ToggleMinimize()
+    self.Minimized = not self.Minimized
+    if self.Minimized then
+        self.MainContainer.Size = UDim2.new(0, self.Config.TabWidth + self.Config.TabGap, 0, self.Config.TitleHeight)
+        self.MinimizeButton.Text = "+"
+        for _, tab in pairs(self.Tabs) do
+            tab.Content.Visible = false
+        end
+    else
+        self.MainContainer.Size = self.OriginalSize
+        self.MinimizeButton.Text = "-"
+        if self.CurrentTab then
+            self.CurrentTab.Content.Visible = true
+        end
+    end
+end
+
+function UILibrary:ToggleVisibility()
+    self.Visible = not self.Visible
+    self.ScreenGui.Enabled = self.Visible
+end
+
+function UILibrary:SetTitle(newTitle)
+    self.Config.TitleText = newTitle
+    self.TitleText.Text = newTitle
+end
+
+-- All the element creation functions need to be modified to add to the current tab
+function UILibrary:AddSection(text)
+    if not self.CurrentTab then return end
+    
+    local section = Instance.new("Frame")
+    section.Name = "Section_" .. text
+    section.Size = UDim2.new(1, -24, 0, self.Config.SectionHeight)
+    section.Position = UDim2.new(0, 12, 0, 0)
+    section.BackgroundTransparency = 1
+    section.LayoutOrder = #self.CurrentTab.Elements + 1
+    section.Parent = self.CurrentTab.Content
+    
+    local sectionText = Instance.new("TextLabel")
+    sectionText.Name = "TextLabel"
+    sectionText.Size = UDim2.new(1, 0, 1, 0)
+    sectionText.Position = UDim2.new(0, 0, 0, 0)
+    sectionText.BackgroundTransparency = 1
+    sectionText.Text = text
+    sectionText.TextColor3 = self.Colors.SectionColor
+    sectionText.TextXAlignment = Enum.TextXAlignment.Left
+    sectionText.Font = Enum.Font.GothamBold
+    sectionText.TextSize = self.Config.TextSize + 1
+    sectionText.Parent = section
+    
+    table.insert(self.CurrentTab.Elements, section)
+    return section
+end
+
+function UILibrary:AddLabel(text)
+    if not self.CurrentTab then return end
+    
+    local label = Instance.new("TextLabel")
+    label.Name = "Label_" .. text
+    label.Size = UDim2.new(1, -24, 0, 18)
+    label.Position = UDim2.new(0, 12, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = self.Colors.LabelColor
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Font = self.Config.Font
+    label.TextSize = self.Config.TextSize
+    label.LayoutOrder = #self.CurrentTab.Elements + 1
+    label.Parent = self.CurrentTab.Content
+    
+    table.insert(self.CurrentTab.Elements, label)
+    return label
+end
+
+function UILibrary:AddButton(config)
+    if not self.CurrentTab then return end
+    
+    local button = Instance.new("TextButton")
+    button.Name = "Button_" .. config.Text
+    button.Size = UDim2.new(1, -24, 0, 30)
+    button.Position = UDim2.new(0, 12, 0, 0)
+    button.BackgroundColor3 = self.Colors.ButtonColor
+    button.BorderSizePixel = 0
+    button.Text = config.Text
+    button.TextColor3 = self.Colors.TitleColor
+    button.Font = self.Config.Font
+    button.TextSize = self.Config.TextSize
+    button.LayoutOrder = #self.CurrentTab.Elements + 1
+    button.AutoButtonColor = false
+    button.Parent = self.CurrentTab.Content
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 4)
+    corner.Parent = button
+    
+    -- Add UI Stroke to button
+    if self.Config.UIStrokeEnabled then
+        local buttonStroke = Instance.new("UIStroke")
+        buttonStroke.Thickness = self.Config.UIStrokeThickness
+        buttonStroke.Color = self.Colors.UIStrokeColor
+        buttonStroke.Parent = button
+    end
+    
+    button.MouseEnter:Connect(function()
+        button.BackgroundColor3 = self.Colors.ButtonHoverColor
+    end)
+    
+    button.MouseLeave:Connect(function()
+        button.BackgroundColor3 = self.Colors.ButtonColor
+    end)
+    
+    if config.Callback then
+        button.MouseButton1Click:Connect(function()
+            local originalSize = button.Size
+            button.Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, originalSize.Y.Scale, originalSize.Y.Offset - 2)
+            task.wait(0.08)
+            button.Size = originalSize
+            
+            config.Callback()
+        end)
+    end
+    
+    table.insert(self.CurrentTab.Elements, button)
+    return button
+end
+
+-- ... (similar modifications for all other element creation functions like AddToggle, AddTextBox, etc.)
+
+function UILibrary:Destroy()
+    if self.ScreenGui then
+        self.ScreenGui:Destroy()
+    end
+    self = nil
+end
+
+return UILibrary
